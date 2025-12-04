@@ -1,0 +1,56 @@
+# User-specific files
+.vs/
+.vscode/
+.idea/
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugNoOptimization/
+[Dd]ebug_x64/
+[Dd]ebug_x86/
+[Dd]ebug_ARM/
+[Dd]ebug_Mac/
+[Dd]Release/
+[Dd]Release_x64/
+[Dd]Release_x86/
+[Dd]Release_ARM/
+[Dd]Release_Mac/
+x64/
+x86/
+arm/
+bin/
+obj/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# VS for Mac
+.vscode/
+
+# CMake build files
+CMakeLists.txt.user
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# User-specific config files
+.vscode/
+.idea/
+
+# Ignore generated files
+*.log
+*.bak
+*.swp
