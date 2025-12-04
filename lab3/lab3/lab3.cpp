@@ -139,6 +139,30 @@ Osoba* dodajIspredOdredenog(char* prez, Osoba* head) {
 	return nova;
 }
 
+void SortirajPoPrezimenu(Osoba* head) {
+	Osoba* j,* prev_j,* temp,* end;
+
+	end = NULL;
+
+	while (head->next != end) {
+		prev_j = head;
+		j = head->next;
+		while (j->next != end) {
+			if (strcmp(j->prez, j->next->prez) > 0) {
+				temp = j->next;
+				prev_j->next = temp;
+				j->next = temp->next;
+				temp->next = j;
+
+				j = temp;
+			}
+			prev_j = j;
+			j = j->next;
+		}
+		end = j;
+	}
+}
+
 int main()
 {
 	Osoba* head = NULL;
@@ -150,7 +174,7 @@ int main()
 
 	do {
 		printf("Izaberi jedan broj:\n");
-		printf("0 - izlaz, 1 - dodaj na pocetak, 2 - ispisi listu , 3 - dodaj na kraj, 4 - trazi po prezimenu, 5 - brisi po prezimnu, 6 - dodaj iza odredenog prezimena, 7 - dodaj ispred odredenog prezimena\n");
+		printf("0 - izlaz, 1 - dodaj na pocetak, 2 - ispisi listu , 3 - dodaj na kraj, 4 - trazi po prezimenu, 5 - brisi po prezimnu, 6 - dodaj iza odredenog prezimena, 7 - dodaj ispred odredenog prezimena, 8 - sortiraj po prezimenu\n");
 		scanf("%d", &unos);
 
 		switch (unos) {
@@ -203,6 +227,9 @@ int main()
 			}
 			else
 				printf("Nije pronadena osoba s prezimenom %s!", prezime);
+			break;
+		case 8:
+			SortirajPoPrezimenu(head);
 			break;
 		default:
 			printf("NE MOZE!");
