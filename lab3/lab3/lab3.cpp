@@ -106,7 +106,7 @@ Osoba* brisi(Osoba* head, char* prezime) {
 	return NULL;
 }
 
-Osoba* dodajIzaOdredenog(char* prez, Osoba* head) {	//
+Osoba* dodajIzaOdredenog(char* prez, Osoba* head) {
 	Osoba* nova = novaOsoba();
 	if (!nova) return head; //ako nova osoba nije napravljena samo vrati head
 	if (!head) return nova; //ako je lista prazna onda je nova osoba prvi elem
@@ -117,7 +117,26 @@ Osoba* dodajIzaOdredenog(char* prez, Osoba* head) {	//
 	}
 	nova->next = temp->next;
 	temp->next = nova;
-	return head;
+	return nova;
+}
+
+Osoba* dodajIspredOdredenog(char* prez, Osoba* head) {
+	Osoba* nova = novaOsoba();
+	if (!nova) return head;
+	if (!head) return nova;
+
+	Osoba* temp = head;
+	Osoba* prev = NULL;
+
+	while (strcmp(temp->prez, prez)){
+		prev = temp;
+		temp = temp->next;
+	}
+	if (prev != NULL) {				//ako prev ima vrijednost izvrsava se ovo
+		prev->next = nova;
+	}
+	nova->next = temp;				//i da nema neku vrijednost ovo se odradi
+	return nova;
 }
 
 int main()
@@ -131,7 +150,7 @@ int main()
 
 	do {
 		printf("Izaberi jedan broj:\n");
-		printf("0 - izlaz, 1 - dodaj na pocetak, 2 - ispisi listu , 3 - dodaj na kraj, 4 - trazi po prezimenu, 5 - brisi po prezimnu, 6 - dodaj iza odredenog prezimena\n");
+		printf("0 - izlaz, 1 - dodaj na pocetak, 2 - ispisi listu , 3 - dodaj na kraj, 4 - trazi po prezimenu, 5 - brisi po prezimnu, 6 - dodaj iza odredenog prezimena, 7 - dodaj ispred odredenog prezimena\n");
 		scanf("%d", &unos);
 
 		switch (unos) {
@@ -169,6 +188,16 @@ int main()
 			printf("Iza kojeg prezimena zelite dodati novu osobu? ");
 			scanf("%s", prezime);
 			odredeni = dodajIzaOdredenog(prezime, head);
+			if (odredeni) {
+				printf("Dodan: %s %s %d\n", odredeni->ime, odredeni->prez, odredeni->god_rod);
+			}
+			else
+				printf("Nije pronadena osoba s prezimenom %s!", prezime);
+			break;
+		case 7:
+			printf("Ispred kojeg prezimena zelite dodati novu osobu? ");
+			scanf("%s", prezime);
+			odredeni = dodajIspredOdredenog(prezime, head);
 			if (odredeni) {
 				printf("Dodan: %s %s %d\n", odredeni->ime, odredeni->prez, odredeni->god_rod);
 			}
