@@ -48,7 +48,7 @@ Osoba* dodajNaPoc(Osoba* head) {
 void ispis(Osoba* head) {
 	Osoba* temp = head;
 	if (!temp) {
-		printf("Prazna lista!");
+		printf("Prazna lista!\n");
 		return;
 	}
 
@@ -163,6 +163,52 @@ void SortirajPoPrezimenu(Osoba* head) {
 	}
 }
 
+void upisiListuUDat(const char* imeDat,Osoba* head) {	//const char jer je fiksno ime datoteke koje ne planiram minjat
+	FILE* fp = fopen(imeDat, "w");
+	if (!fp) {
+		printf("Ne mogu otvorit datoteku!\n");
+		return;
+	}
+	Osoba* temp = head;
+	while (temp) {			//dok next nije NULL jer kad temp postane temp->next koji je NULL ovo se prekida
+		fprintf(fp, "%s %s %d\n", temp->ime, temp->prez, temp->god_rod);
+		temp = temp->next;
+	}
+
+	fclose(fp);
+	printf("Lista upisana\n");
+}
+
+Osoba* citajListuIzDat(const char* imeDatoteke) {	//ode ne primamo head jer se podrazumijeva da cemo radit novo stablo sa novim podacima
+	FILE* fp = fopen(imeDatoteke, "r");
+	if (!fp) {
+		printf("Ne mogu otvoriti datoteku!\n");
+		return NULL;							//vracamo NULL jer vracamo stablo koje ce bit prazno, gore je bio void jer nismo vracali nista
+	}
+
+	Osoba* head = NULL;
+	Osoba* temp = NULL;
+	while (!feof(fp)) {			//eof = end of file - ide dok ne dode do kraja filea
+		Osoba* nova = (Osoba*)malloc(sizeof(Osoba));		//radim novu praznu osobu
+		if (fscanf(fp, "%s %s %d", nova->ime, nova->prez, &nova->god_rod) == 3) {    //ode ==3 jer provjeravamo jesmo li ucitali 3 podatka
+			nova->next = NULL;														//jer je nova buduci zadnji
+			
+			if (head == NULL) {														//ako je stablo prazno
+				head = nova;
+				temp = nova;
+			}
+			else {
+				temp->next = nova;
+				temp = temp->next;
+			}
+		}
+	}
+
+	fclose(fp);
+	printf("Lista procitana\n");
+	return head;				//vraca head koji smo isponili sa ovim podacima iz datoteke
+}
+
 int main()
 {
 	Osoba* head = NULL;
@@ -174,7 +220,7 @@ int main()
 
 	do {
 		printf("Izaberi jedan broj:\n");
-		printf("0 - izlaz, 1 - dodaj na pocetak, 2 - ispisi listu , 3 - dodaj na kraj, 4 - trazi po prezimenu, 5 - brisi po prezimnu, 6 - dodaj iza odredenog prezimena, 7 - dodaj ispred odredenog prezimena, 8 - sortiraj po prezimenu\n");
+		printf("0 - izlaz, 1 - dodaj na pocetak, 2 - ispisi listu , 3 - dodaj na kraj, 4 - trazi po prezimenu, 5 - brisi po prezimnu, 6 - dodaj iza odredenog prezimena, 7 - dodaj ispred odredenog prezimena, 8 - sortiraj po prezimenu. 9 - upisi listu u datoteku, 10 - citaj listu iz datoteke\n");
 		scanf("%d", &unos);
 
 		switch (unos) {
@@ -230,6 +276,12 @@ int main()
 			break;
 		case 8:
 			SortirajPoPrezimenu(head);
+			break;
+		case 9:
+			upisiListuUDat("lista.txt", head);			//datoteku stavljam u gitignore
+			break;
+		case 10:
+			head = citajListuIzDat("lista.txt");		//'head =' zato sta negdi moramo spremit ono novo napravljeno stablo
 			break;
 		default:
 			printf("NE MOZE!");
