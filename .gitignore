@@ -56,3 +56,6 @@ cmake_install.cmake
 *.swp
 
 lista.txt
+polinom1.txt
+polinom2.txt
+postfiks.txt
