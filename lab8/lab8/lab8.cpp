@@ -5,154 +5,152 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <ctype.h>
 
-typedef struct _cvor {
-	int broj;
-	struct _cvor* next;
-}Cvor;
+#define OK             0
+#define ERR_ALLOC      1
+#define ERR_FILE       2
+#define ERR_EMPTY      3
+#define ERR_EXPR       4
+#define ERR_DIV0       5
 
-Cvor* Push(Cvor* head, int br) {
-	Cvor* novi = (Cvor*)malloc(sizeof(Cvor));
-	if (!novi) {
-		printf("GRESKA u alokaciji!\n");
-		return head;
-	}
-	novi->broj = br;
-	novi->next = head;
-	return novi;							//vracan novi head
+typedef struct _cvor {
+    int broj;
+    struct _cvor* next;
+} Cvor;
+
+int Push(Cvor** head, int br) {
+    Cvor* novi = (Cvor*)malloc(sizeof(Cvor));
+    if (!novi) return ERR_ALLOC;
+
+    novi->broj = br;
+    novi->next = *head;
+    *head = novi;
+    return OK;
 }
 
-int Pop(Cvor** head) {
-	if (*head == NULL) {
-		printf("Stog je prazan!\n");
-		return 0;
-	}
-	Cvor* temp = *head;
-	int vrijednost = temp->broj;
-	*head = (*head)->next;					//iduci
-	free(temp);
-	return vrijednost;
+int Pop(Cvor** head, int* out) {
+    if (*head == NULL) return ERR_EMPTY;
+
+    Cvor* temp = *head;
+    *out = temp->broj;
+    *head = (*head)->next;
+    free(temp);
+    return OK;
 }
 
 int jePrazan(Cvor* head) {
-	return head == NULL;					//1 ako prazan, 0 ako nije
+    return head == NULL;
 }
 
-void ispisiStog(Cvor* head) {
-	if (!head) {
-		printf("Stog prazan\n");
-		return;
-	}
-	printf("Stog: ");
-	Cvor* temp = head;
-	while (temp) {
-		printf("%d ", temp->broj);
-		temp = temp->next;
-	}
-
-	printf("\n");
+void freeStog(Cvor* head) {
+    while (head) {
+        Cvor* next = head->next;
+        free(head);
+        head = next;
+    }
 }
 
-int izrPostfiks(const char* imeDat) {
-	FILE* fp = fopen(imeDat, "r");
-	if (!fp) {
-		printf("GRESKA!\n");
-		return 0;
-	}
+int izrPostfiks(const char* imeDat, int* outRez) {
+    FILE* fp = fopen(imeDat, "r");
+    if (!fp) return ERR_FILE;
 
-	Cvor* stog = NULL;
-	char c;
-	int broj = 0;
-	int imabr = 0;													//flag da znam jesan li procitala broj
+    Cvor* stog = NULL;
+    int c;
 
-	while ((c = fgetc(fp)) != EOF) {
-		if (isdigit(c)) {											//ako je znamenka
-			broj = broj * 10 + (c - '0');							//moze bit vise znamenki
-			imabr = 1;
-		}
-		else if (c == ' ' || c == '\t' || c == '\n') {				//razmak = kraj broja
-			if (imabr) {
-				stog = Push(stog, broj);
-				printf("Pushano: %d\n", broj);
-				broj = 0;
-				imabr = 0;
-			}
-		}
-		else if (c == '+' || c == '-' || c == '*' || c == '/') {
-			if (imabr) {											//ako ima broj prije operatora pusham ga
-				stog = Push(stog, broj);
-				printf("Pushano: %d\n", broj);
-				broj = 0;
-				imabr = 0;
-			}
+    int broj = 0;
+    int imabr = 0;
 
-			if (jePrazan(stog)) {
-				printf("GRESKA! Prazan je stog\n");
-				fclose(fp);
-				return 0;
-			}
-			int op2 = Pop(&stog);		//prvi skinem
+    while ((c = fgetc(fp)) != EOF) {
+        if (isdigit(c)) {
+            broj = broj * 10 + (c - '0');
+            imabr = 1;
+        }
+        else if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
+            if (imabr) {
+                int st = Push(&stog, broj);
+                if (st != OK) {
+                    fclose(fp);
+                    freeStog(stog);
+                    return st;
+                }
+                broj = 0;
+                imabr = 0;
+            }
+        }
+        else if (c == '+' || c == '-' || c == '*' || c == '/') {
+            if (imabr) {
+                int st = Push(&stog, broj);
+                if (st != OK) {
+                    fclose(fp);
+                    freeStog(stog);
+                    return st;
+                }
+                broj = 0;
+                imabr = 0;
+            }
 
-			if (jePrazan(stog)) {
-				printf("GRESKA! Prazan je stok\n");
-				fclose(fp);
-				return 0;
-			}
-			int op1 = Pop(&stog);		//drugi skinem
+            int op2, op1;
+            int st = Pop(&stog, &op2);
+            if (st != OK) { fclose(fp); freeStog(stog); return ERR_EXPR; }
 
-			int rez = 0;
+            st = Pop(&stog, &op1);
+            if (st != OK) { fclose(fp); freeStog(stog); return ERR_EXPR; }
 
-			switch (c) {
-			case '+':
-				rez = op1 + op2;
-				printf("%d + %d = %d\n", op1, op2, rez);
-				break;
-			case '-':
-				rez = op1 - op2;
-				printf("%d - %d = %d\n", op1, op2, rez);
-				break;
-			case '*':
-				rez = op1 * op2;
-				printf("%d * %d = %d\n", op1, op2, rez);
-				break;
-			case '/':
-				if (op2 == 0) {
-					printf("Ne mozes dilit sa 0\n");
-					fclose(fp);
-					return 0;
-				}
-				rez = op1 / op2;
-				printf("%d / %d = %d\n", op1, op2, rez);
-				break;
-			}
-			stog = Push(stog, rez);		//pusham rez nazad na stog
-		}
-	}
+            int rez = 0;
+            if (c == '+') rez = op1 + op2;
+            else if (c == '-') rez = op1 - op2;
+            else if (c == '*') rez = op1 * op2;
+            else {
+                if (op2 == 0) { fclose(fp); freeStog(stog); return ERR_DIV0; }
+                rez = op1 / op2;
+            }
 
-	fclose(fp);
+            st = Push(&stog, rez);
+            if (st != OK) { fclose(fp); freeStog(stog); return st; }
+        }
+        else {
+            fclose(fp);
+            freeStog(stog);
+            return ERR_EXPR;
+        }
+    }
 
-	if (jePrazan(stog)) {
-		printf("Stog prazan na kraju\n");
-		return 0;
-	}
+    fclose(fp);
 
-	int konacniRez = Pop(&stog);
+    if (imabr) {
+        int st = Push(&stog, broj);
+        if (st != OK) { freeStog(stog); return st; }
+    }
 
-	if (!jePrazan(stog)) {
-		printf("Vise od jednog broja ostalo na stogu\n");
-		return 0;
-	}
+    int konacni;
+    int st = Pop(&stog, &konacni);
+    if (st != OK) { freeStog(stog); return ERR_EXPR; }
 
-	return konacniRez;
+    if (!jePrazan(stog)) {
+        freeStog(stog);
+        return ERR_EXPR;
+    }
+
+    *outRez = konacni;
+    return OK;
 }
 
-int main()
-{
-	int rezultat = izrPostfiks("postfiks.txt");
+int main(void) {
+    int rezultat = 0;
+    int st = izrPostfiks("postfiks.txt", &rezultat);
 
-	printf("Finalni rez: %d\n", rezultat);
+    if (st == OK) {
+        printf("Finalni rez: %d\n", rezultat);
+    }
+    else {
+        printf("Error ");
+        if (st == ERR_FILE) printf("Ne mogu otvorit datoteku\n");
+        else if (st == ERR_ALLOC) printf("Alokacija nije uspila\n");
+        else if (st == ERR_DIV0) printf("Dijeljenje s 0\n");
+        else if (st == ERR_EXPR) printf("Neispravan postfiks izraz\n");
+        else printf("Nepoznata greska\n");
+    }
 
-	return 0;
+    return 0;
 }

@@ -1,7 +1,7 @@
-/*Napisati program koji prvo proèita koliko redaka ima datoteka, tj. koliko ima studenata zapisanih u
-datoteci. Nakon toga potrebno je dinamièki alocirati prostor za niz struktura studenata (ime, prezime,
-bodovi) i uèitati iz datoteke sve zapise. Na ekran ispisati ime, prezime,apsolutni i relativni broj bodova.
-Napomena: Svaki redak datoteke sadrži ime i prezime studenta, te broj bodova na kolokviju.
+ï»¿/*Napisati program koji prvo proï¿½ita koliko redaka ima datoteka, tj. koliko ima studenata zapisanih u
+datoteci. Nakon toga potrebno je dinamiï¿½ki alocirati prostor za niz struktura studenata (ime, prezime,
+bodovi) i uï¿½itati iz datoteke sve zapise. Na ekran ispisati ime, prezime,apsolutni i relativni broj bodova.
+Napomena: Svaki redak datoteke sadrï¿½i ime i prezime studenta, te broj bodova na kolokviju.
 relatvan_br_bodova = br_bodova/max_br_bodova*100
 */
 #define _CRT_SECURE_NO_WARNINGS
@@ -16,7 +16,7 @@ struct Student {
 int main()
 {
 	int max_bodovi = 150;
-	const char *path = "C:\\Users\\mrkia\\Desktop\\FESB\\Strukture podataka\\AiSP\\lab1\\x64\\Debug\\studenti.txt";
+	const char* path = "C:\\Users\\mrkia\\Desktop\\FESB\\Strukture podataka\\AiSP\\lab1\\x64\\Debug\\studenti.txt";
 
 	FILE* f = fopen(path, "r");
 
@@ -39,8 +39,8 @@ int main()
 		printf("Datoteka je prazna!");
 	}
 	printf("Datoteka ima %d studenata.\n", br_red);
-	
-	struct Student *niz = (struct Student*)malloc(br_red*sizeof(Student));
+
+	struct Student* niz = (struct Student*)malloc(br_red * sizeof(Student));
 
 	f = fopen(path, "r");
 	if (f == NULL) {
@@ -50,11 +50,11 @@ int main()
 
 	int i = 0;
 	while (i < br_red && fgets(buffer, sizeof(buffer), f) != NULL) {
-		if (sscanf(buffer, "%s %s %d", niz[i].ime, niz[i].prez, &niz[i].bodovi)==3) {
+		if (sscanf(buffer, "%s %s %d", niz[i].ime, niz[i].prez, &niz[i].bodovi) == 3) {
 			i++;
 		}
 		else {
-			printf("GRESKA! Na redu %d.", i+1);
+			printf("GRESKA! Na redu %d.", i + 1);
 		}
 	}
 	fclose(f);
@@ -70,9 +70,9 @@ int main()
 
 	int j = 0;
 	printf("%-20s %-20s %-20s %-20s\n", "Ime", "Prezime", "Apsolutni", "Relativni");
-	while (j<br_red) {
+	while (j < br_red) {
 		if (najbolji_bodovi > 0) {
-			double rel = niz[j].bodovi*100.0/ najbolji_bodovi;
+			double rel = niz[j].bodovi * 100.0 / najbolji_bodovi;
 			printf("%-20s %-20s %-20d %-20f\n", niz[j].ime, niz[j].prez, niz[j].bodovi, rel);
 		}
 		else {
@@ -84,4 +84,3 @@ int main()
 	free(niz);
 	return 0;
 }
-

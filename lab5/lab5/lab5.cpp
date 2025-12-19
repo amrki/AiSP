@@ -7,167 +7,201 @@
 //
 
 #define _CRT_SECURE_NO_WARNINGS
-#include<stdio.h>
-#include<stdlib.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#define OK             0
+#define ERR_ALLOC      1
+#define ERR_INPUT      2
+#define ERR_EMPTY      3
 
 typedef struct Cvor {
     int elem;
     struct Cvor* next;
-}Cvor;
+} Cvor;
 
 void Ispis(Cvor* head) {
-    if (head == NULL) {                         //provjeraaa
+    if (head == NULL) {
         printf("Lista je prazna\n");
         return;
     }
 
-    Cvor* temp = head;
-
     printf("Lista: ");
-    while (temp != NULL) {                      //prolazin kroz listu
-        printf("%d ", temp->elem);
-        temp = temp->next;
+    while (head) {
+        printf("%d ", head->elem);
+        head = head->next;
     }
     printf("\n");
 }
 
-int Unos(Cvor** head, int broj) {
+int DodajNaKraj(Cvor** head, Cvor** tail, int broj) {
     Cvor* novi = (Cvor*)malloc(sizeof(Cvor));
+    if (!novi) return ERR_ALLOC;
 
-    if (novi == NULL) {
-        printf("GRESKA!\n");
-        return -1;
-    }
     novi->elem = broj;
     novi->next = NULL;
 
-    if (*head == NULL || (*head)->elem >= broj) {   //ako je lista prazna ili novi element ide na pocetak
-        novi->next = *head;
+    if (*head == NULL) {
         *head = novi;
-        return 0;
+        *tail = novi;
     }
-
-    Cvor* temp = *head;
-    while (temp->next != NULL && temp->next->elem < broj) {
-        temp = temp->next;
+    else {
+        (*tail)->next = novi;
+        *tail = novi;
     }
-
-    novi->next = temp->next;
-    temp->next = novi;
-
-    return 0;
+    return OK;
 }
 
-Cvor* unosListe(int brListe) {
-    Cvor* head = NULL;
+/* preskoci sve uzastopne iste vrijednosti */
+Cvor* preskociJednake(Cvor* p) {
+    if (!p) return NULL;
+    int v = p->elem;
+    while (p && p->elem == v) p = p->next;
+    return p;
+}
+
+/* provjeravamo jel uneseno sortirano */
+int unosListe(int brListe, Cvor** head) {
+    *head = NULL;
+    Cvor* tail = NULL;
+
     int n = 0;
     int broj = 0;
+    int prev = 0;
+    int prvi = 1;
 
     printf("\nUnos liste L%d\n", brListe);
-    printf("Koliko elem zelite unit? ");
-    scanf("%d", &n);
+    printf("Koliko elem zelite unijeti? ");
+
+    if (scanf("%d", &n) != 1) return ERR_INPUT;
 
     if (n <= 0) {
-        printf("Lista ostaje prazna\n");
-        return NULL;
+        printf("Lista prazna\n");
+        return ERR_EMPTY;
     }
 
-    printf("Unesite %d sortiranih br (od manjeg prema vecem): \n", n);
+    printf("Unesite %d sortiranih brojeva (od manjeg prema vecem):\n", n);
+
     for (int i = 0; i < n; i++) {
         printf("Elem %d: ", i + 1);
-        scanf("%d", &broj);
-        Unos(&head, broj);                       //dodala elem na sortirano misto
+        if (scanf("%d", &broj) != 1) return ERR_INPUT;
+
+        if (!prvi && broj < prev) {
+            printf("Lista nije sortirana (%d nakon %d)\n", broj, prev);
+            return ERR_INPUT;
+        }
+        prvi = 0;
+        prev = broj;
+
+        int st = DodajNaKraj(head, &tail, broj);
+        if (st != OK) return st;
     }
 
-    return head;
+    return OK;
 }
 
-Cvor* Unija(Cvor* L1, Cvor* L2) {
-    Cvor* rez = NULL;
-    Cvor* temp1 = L1;
-    Cvor* temp2 = L2;
+int Unija(Cvor* L1, Cvor* L2, Cvor** rez) {
+    *rez = NULL;
+    Cvor* tail = NULL;
 
-    while (temp1 != NULL && temp2 != NULL) {
-        if (temp1->elem < temp2->elem) {        //ako je elem iz l1 manji ide u rez
-            Unos(&rez, temp1->elem);
-            temp1 = temp1->next;
+    while (L1 && L2) {
+        if (L1->elem < L2->elem) {
+            int st = DodajNaKraj(rez, &tail, L1->elem);
+            if (st != OK) return st;
+            L1 = preskociJednake(L1);
         }
-        else if (temp1->elem > temp2->elem) {   //ako je elem iz l1 manji ide u rez
-            Unos(&rez, temp2->elem);
-            temp2 = temp2->next;
+        else if (L1->elem > L2->elem) {
+            int st = DodajNaKraj(rez, &tail, L2->elem);
+            if (st != OK) return st;
+            L2 = preskociJednake(L2);
         }
         else {
-            Unos(&rez, temp1->elem);            //ako jednaki dodajemo jedan od njih
-            temp1 = temp1->next;
-            temp2 = temp2->next;
+            int st = DodajNaKraj(rez, &tail, L1->elem);
+            if (st != OK) return st;
+            L1 = preskociJednake(L1);
+            L2 = preskociJednake(L2);
         }
     }
 
-    while (temp1 != NULL) {                     //dodat ostale iz l1
-        Unos(&rez, temp1->elem);
-        temp1 = temp1->next;
+    while (L1) {
+        int st = DodajNaKraj(rez, &tail, L1->elem);
+        if (st != OK) return st;
+        L1 = preskociJednake(L1);
     }
 
-    while (temp2 != NULL) {                     //dodat ostale iz l2
-        Unos(&rez, temp2->elem);
-        temp2 = temp2->next;
+    while (L2) {
+        int st = DodajNaKraj(rez, &tail, L2->elem);
+        if (st != OK) return st;
+        L2 = preskociJednake(L2);
     }
 
-    return rez;
+    return (*rez == NULL) ? ERR_EMPTY : OK;
 }
-Cvor* Presjek(Cvor* L1, Cvor* L2) {
-    Cvor* rez = NULL;
-    Cvor* temp1 = L1;
-    Cvor* temp2 = L2;
 
-    while (temp1 != NULL && temp2 != NULL) {
+int Presjek(Cvor* L1, Cvor* L2, Cvor** rez) {
+    *rez = NULL;
+    Cvor* tail = NULL;
 
-        if (temp1->elem < temp2->elem) {        //preskacemo ga ako je manji
-            temp1 = temp1->next;
+    while (L1 && L2) {
+        if (L1->elem < L2->elem) {
+            L1 = preskociJednake(L1);
         }
-        else if (temp1->elem > temp2->elem) {   //prekacemo ga ako je manji
-            temp2 = temp2->next;
+        else if (L1->elem > L2->elem) {
+            L2 = preskociJednake(L2);
         }
-        else {                                  //nalaze se u obe lste
-            Unos(&rez, temp1->elem);
-            temp1 = temp1->next;
-            temp2 = temp2->next;
+        else {
+            int st = DodajNaKraj(rez, &tail, L1->elem);
+            if (st != OK) return st;
+            L1 = preskociJednake(L1);
+            L2 = preskociJednake(L2);
         }
     }
-    return rez;
+
+    return (*rez == NULL) ? ERR_EMPTY : OK;
 }
 
 void freeMem(Cvor* head) {
-    Cvor* temp;
-    while (head != NULL) {
-        temp = head;
-        head = head->next;
-        free(temp);
+    while (head) {
+        Cvor* next = head->next;
+        free(head);
+        head = next;
     }
 }
 
-int main()
-{
+int main() {
     Cvor* L1 = NULL;
     Cvor* L2 = NULL;
     Cvor* unijaRez = NULL;
     Cvor* presjekRez = NULL;
 
-    L1 = unosListe(1);
-    printf("\nUnesena ");
+    int st = unosListe(1, &L1);
+    if (st != OK && st != ERR_EMPTY) {
+        printf("Problem pri unosu L1\n");
+        freeMem(L1);
+        return 1;
+    }
+    printf("\nUnesena L1:\n");
     Ispis(L1);
 
-    L2 = unosListe(2);
-    printf("\nUnesena ");
+    st = unosListe(2, &L2);
+    if (st != OK && st != ERR_EMPTY) {
+        printf("Problem pri unosu L2\n");
+        freeMem(L1);
+        freeMem(L2);
+        return 1;
+    }
+    printf("\nUnesena L2:\n");
     Ispis(L2);
 
-    unijaRez = Unija(L1, L2);
-    printf("\nL1 U L2 (Unija): ");
-    Ispis(unijaRez);
+    st = Unija(L1, L2, &unijaRez);
+    printf("\nL1 U L2:\n");
+    if (st == OK) Ispis(unijaRez);
+    else printf("Prazna\n");
 
-    presjekRez = Presjek(L1, L2);
-    printf("L1 n L2 (Presjek): ");
-    Ispis(presjekRez);
+    st = Presjek(L1, L2, &presjekRez);
+    printf("\nL1 n L2:\n");
+    if (st == OK) Ispis(presjekRez);
+    else printf("Prazna\n");
 
     freeMem(L1);
     freeMem(L2);
@@ -176,4 +210,3 @@ int main()
 
     return 0;
 }
-
