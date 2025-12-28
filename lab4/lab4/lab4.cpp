@@ -184,6 +184,11 @@ int main() {
     }
     else {
         printf("Zbrajanje nije uspilo\n");
+        Free(head1);
+        Free(head2);
+        Free(sum);
+        Free(prod);
+        return st;
     }
 
     st = PomnoziPoli(head1, head2, &prod);
@@ -193,6 +198,11 @@ int main() {
     }
     else {
         printf("Mnozenje nije uspilo\n");
+        Free(head1);
+        Free(head2);
+        Free(sum);
+        Free(prod);
+        return st;
     }
 
     Free(head1);

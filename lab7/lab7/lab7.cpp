@@ -254,9 +254,9 @@ int main(void) {
 
         if (scanf("%d", &unos) != 1) {
             printf("Krivi unos\n");
-            obrisiStog(stog);
-            obrisiRed(red);
-            return ERR_INPUT;
+            int c;
+            while ((c = getchar()) != '\n' && c != EOF);
+            continue;
         }
 
         int st = OK;
@@ -273,9 +273,14 @@ int main(void) {
                 printf("PUSH: %d\n", dodan);
                 if (obrisano) printf("Obrisan najstariji: %d\n", obrisan);
             }
+            else if (st == ERR_ALLOC) {
+                printf("Greska u alokaciji memorije\n");
+                obrisiStog(stog);
+                obrisiRed(red);
+                return ERR_ALLOC;
+            }
             break;
         }
-
         case 2: {
             int x = 0;
             st = Pop(&stog, &x);
@@ -292,10 +297,16 @@ int main(void) {
             int e = 0, p = 0;
             st = Enqueue(&red, &e, &p);
             if (st == OK) printf("ENQUEUE: %d (P:%d)\n", e, p);
+            else if (st == ERR_ALLOC) {
+                printf("Greska u alokaciji memorije\n");
+                obrisiStog(stog);
+                obrisiRed(red);
+                return ERR_ALLOC;
+            }
             break;
         }
 
-        case 5: {
+        case 5: { 
             int e = 0, p = 0;
             st = Dequeue(&red, &e, &p);
             if (st == OK) printf("DEQUEUE: %d (P:%d)\n", e, p);
@@ -309,10 +320,7 @@ int main(void) {
 
         default:
             printf("NE MOZE\n");
-        }
-
-        if (st != OK) {
-            if (st == ERR_ALLOC) printf("Greska u alokaciji\n");
+            break;
         }
 
     } while (unos != 0);

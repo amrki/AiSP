@@ -149,8 +149,7 @@ void MeniRed(void) {
     printf("Izaberi: ");
 }
 
-int simStog(void) {
-    Cvor* stog = NULL;
+int simStog(Cvor** stog) {
     int izbor = 0;
     int x = 0;
 
@@ -160,19 +159,26 @@ int simStog(void) {
         MeniStog();
         if (scanf("%d", &izbor) != 1) {
             printf("Krivi unos\n");
-            freeMem(stog);
-            return ERR_INPUT;
+            int c;
+            while ((c = getchar()) != '\n' && c != EOF);
+            continue;
         }
 
         switch (izbor) {
-        case 1:
-            Push(&stog);
+        case 1: {
+            int st = Push(stog);
+            if (st != OK) {
+                freeMem(*stog);
+                *stog = NULL;
+                return st;
+            }
             break;
+        }
         case 2:
-            Pop(&stog, &x);
+            Pop(stog, &x);
             break;
         case 3:
-            IspisStog(stog);
+            IspisStog(*stog);
             break;
         case 0:
             printf("Povratak\n");
@@ -182,13 +188,10 @@ int simStog(void) {
         }
     } while (izbor != 0);
 
-    freeMem(stog);
     return OK;
 }
 
-int simRed(void) {
-    Cvor* head = NULL;
-    Cvor* tail = NULL;
+int simRed(Cvor** head, Cvor** tail) {
     int izbor = 0;
     int x = 0;
 
@@ -198,19 +201,28 @@ int simRed(void) {
         MeniRed();
         if (scanf("%d", &izbor) != 1) {
             printf("Krivi unos\n");
-            freeMem(head);
-            return ERR_INPUT;
+            int c;
+            while ((c = getchar()) != '\n' && c != EOF);
+            continue;
         }
 
         switch (izbor) {
         case 1:
-            Enqueue(&head, &tail);
+        {
+            int st = Enqueue(head, tail);
+            if (st != OK) {
+                freeMem(*head);
+                *head = NULL;
+                *tail = NULL;
+                return st;
+            }
             break;
+        }
         case 2:
-            Dequeue(&head, &tail, &x);
+            Dequeue(head, tail, &x);
             break;
         case 3:
-            IspisRed(head);
+            IspisRed(*head);
             break;
         case 0:
             printf("Povratak\n");
@@ -220,14 +232,18 @@ int simRed(void) {
         }
     } while (izbor != 0);
 
-    freeMem(head);
     return OK;
 }
 
 int main(void) {
     srand((unsigned)time(NULL));
 
+    Cvor* stog = NULL;
+    Cvor* redHead = NULL;
+    Cvor* redTail = NULL;
+
     int izbor = 0;
+    int st = 0;
 
     do {
         printf("\n1 Simulacija stoga\n");
@@ -236,24 +252,39 @@ int main(void) {
         printf("Izaberi: ");
 
         if (scanf("%d", &izbor) != 1) {
-            printf("Krivi unos\n");
-            return ERR_INPUT;
+            int c;
+            while ((c = getchar()) != '\n' && c != EOF);
+            continue;
         }
 
         switch (izbor) {
         case 1:
-            simStog();
+            st = simStog(&stog);
+            if (st != OK) {
+                freeMem(stog);
+                freeMem(redHead);
+                return st;
+            }
             break;
         case 2:
-            simRed();
+            st = simRed(&redHead, &redTail);
+            if (st != OK) {
+                freeMem(stog);
+                freeMem(redHead);
+                return st;
+            }
             break;
         case 0:
             printf("Izlaz\n");
             break;
         default:
             printf("Neispravan izbor\n");
+            break;
         }
     } while (izbor != 0);
+
+    freeMem(stog);
+    freeMem(redHead);
 
     return 0;
 }

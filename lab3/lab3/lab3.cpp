@@ -413,6 +413,9 @@ int main() {
             else if (st == ERR_NOT_FOUND) printf("Nije pronadeno\n");
             else if (st == ERR_FILE) printf("Problem s datotekom\n");
             else printf("Nepoznata greska\n");
+
+            freeListu(head);
+            return st;
         }
 
     } while (unos != 0);

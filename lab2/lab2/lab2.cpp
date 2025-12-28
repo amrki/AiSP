@@ -221,6 +221,9 @@ int main() {
             else if (st == ERR_EMPTY) printf("Lista je prazna\n");
             else if (st == ERR_NOT_FOUND) printf("Nije pronadeno\n");
             else printf("Nepoznata greska\n");
+
+            freeListu(head);
+            return st;
         }
 
     } while (unos != 0);

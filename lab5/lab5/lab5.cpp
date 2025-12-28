@@ -196,12 +196,28 @@ int main() {
     st = Unija(L1, L2, &unijaRez);
     printf("\nL1 U L2:\n");
     if (st == OK) Ispis(unijaRez);
-    else printf("Prazna\n");
+    else if (st == ERR_EMPTY) printf("Prazna\n");
+    else {
+        printf("Greska pri racunanju unije\n");
+        freeMem(L1);
+        freeMem(L2);
+        freeMem(unijaRez);
+        freeMem(presjekRez);
+        return st;
+    }
 
     st = Presjek(L1, L2, &presjekRez);
     printf("\nL1 n L2:\n");
     if (st == OK) Ispis(presjekRez);
-    else printf("Prazna\n");
+    else if (st == ERR_EMPTY) printf("Prazna\n");
+    else {
+        printf("Greska pri racunanju presjeka\n");
+        freeMem(L1);
+        freeMem(L2);
+        freeMem(unijaRez);
+        freeMem(presjekRez);
+        return st;
+    }
 
     freeMem(L1);
     freeMem(L2);
